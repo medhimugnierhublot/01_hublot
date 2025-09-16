@@ -1,0 +1,575 @@
+WITH
+
+
+-- 👇 Control IDs pasted here
+control_input AS (
+  SELECT *
+  FROM UNNEST([
+  '00167000068sn4KAAQ',
+'0010X00004EdBq9QAF',
+'00167000066B6mkAAC',
+'0016700005asjojAAA',
+'0010X00004KCcJhQAL',
+'0016700005cHR6KAAW',
+'0016700005dqzVLAAY',
+'0016700006HCUtWAAX',
+'0010X00004KA7bDQAT',
+'0016700005gyHKCAA2',
+'0016700006Q9FRKAA3',
+'0010X00004PDMS8QAP',
+'0016700006HBXVdAAP',
+'0010X00004KCcRJQA1',
+'0016700005TQanfAAD',
+'0010X00004vgJW1QAM',
+'0010X000053b36PQAQ',
+'0016700006Q9f52AAB',
+'0016700006H9MGTAA3',
+'0016700006Q9P7ZAAV',
+'0016700005r7vnqAAA',
+'00167000068slV5AAI',
+'0016700005jWBLOAA4',
+'0016700006HD0xKAAT',
+'0010X000049fLqSQAU',
+'0010X00004CQ5goQAD',
+'0010X000053YYhWQAW',
+'0016700006H9J3jAAF',
+'001b000003JL3EUAA1',
+'00167000068re7yAAA',
+'0016700005r8ONiAAM',
+'001b000000orEANAA2',
+'0016700005lvGn6AAE',
+'0016700005XK36xAAD',
+'0016700005TRCnkAAH',
+'0010X000053bmnvQAA',
+'001b000003oMb75AAC',
+'0016700006IPB8MAAX',
+'001J5000006cp6KIAQ',
+'00167000061f1cFAAQ',
+'0016700005luMKUAA2',
+'0016700005Gw46RAAR',
+'0016700006HAJtqAAH',
+'001J5000006curjIAA',
+'00167000061i0CCAAY',
+'0016700006F7uVBAAZ',
+'0010X000049fHG6QAM',
+'0010X00004bZBs3QAG',
+'0016700005VUI2sAAH',
+'00167000068zvbuAAA',
+'0016700005dpqknAAA',
+'0016700006HAAGKAA5',
+'0016700006KV0ZpAAL',
+'0016700006CtDxXAAV',
+'001b0000026egOrAAI',
+'001J5000006cV6ZIAU',
+'001J5000007WNJkIAO',
+'0016700006NhgaPAAR',
+'0016700006NfICOAA3',
+'0016700006NgNmLAAV',
+'0016700006NhUQ6AAN',
+'0016700006FAcaAAAT',
+'001J5000006aiLEIAY',
+'0016700006FAXueAAH',
+'00167000068rPbAAAU',
+'001J50000088CruIAE',
+'00167000068zeobAAA',
+'0016700006IOBv0AAH',
+'0016700006KTOVxAAP',
+'0016700006CujsAAAR',
+'001670000612egZAAQ',
+'0016700006HBec1AAD',
+'0016700006HBmR9AAL',
+'00167000068slXRAAY',
+'0016700006HC36uAAD',
+'0016700006F7aGzAAJ',
+'00167000068zvyZAAQ',
+'001J5000007SlJkIAK',
+'0016700006F9IYdAAN',
+'001J5000007UfJhIAK',
+'001J5000007VkqAIAS',
+'0016700006IQL9RAAX',
+'00167000061hKahAAE',
+'0010X000044qMJQQA2',
+'001J5000007W8fTIAS',
+'00167000061i4dNAAQ',
+'00167000057qSXeAAM',
+'0016700006FASrzAAH',
+'00167000061hTMtAAM',
+'0016700006HCrPlAAL',
+'00167000061eSA4AAM',
+'00167000068sZi9AAE',
+'0016700006HBIegAAH',
+'0016700006HAmOqAAL',
+'0016700005r8zmLAAQ',
+'00167000068sk5tAAA',
+'0016700005GurOuAAJ',
+'00167000068smJeAAI',
+'0016700006FA8eVAAT',
+'0016700006KUk6JAAT',
+'0010X00004EcjcRQAR',
+'001J5000006c5ShIAI',
+'001J5000007Ti77IAC',
+'001J5000006ddJTIAY',
+'001J5000007UfEDIA0',
+'001J5000006bsL2IAI',
+'0016700006KUF5yAAH',
+'001J5000007SnoHIAS',
+'0016700006IPHwMAAX',
+'0016700005gwPdPAAU',
+'00167000068sAhjAAE',
+'00167000068sMWbAAM',
+'0016700006Nh0y5AAB',
+'0016700006F7FjTAAV',
+'0016700006NhUPIAA3',
+'00167000061i6pCAAQ',
+'001J5000006aB8ZIAU',
+'001b000003TRTknAAH',
+'0016700006KTXvGAAX',
+'0016700006FAXqKAAX',
+'0016700006NgMPuAAN',
+'0016700006H9jsmAAB',
+'0016700006FAeijAAD',
+'0016700005xdPsvAAE',
+'001J5000007Vdl5IAC',
+'001J5000007VdlZIAS',
+'0016700006HALuoAAH',
+'001J5000007U0p0IAC',
+'001J5000007W8b2IAC',
+'001b000003NNM0eAAH',
+'0016700006HBqCKAA1',
+'001J5000006blWuIAI',
+'001J5000006aTnGIAU',
+'00167000068sILYAA2',
+'00167000068rGhAAAU',
+'0016700006F8UqYAAV',
+'0016700006NhxgcAAB',
+'0016700006HD8BSAA1',
+'0016700006HAmOgAAL',
+'0016700006HAwjOAAT',
+'00167000065zH3kAAE',
+'00167000068sAgRAAU',
+'0016700006HAJt2AAH',
+'001J5000005X2ejIAC',
+'00167000068smTzAAI',
+'001J5000007Uq7hIAC',
+'0010X00004uDX04QAG',
+'00167000061hKzUAAU',
+'0016700006KUNHJAA5',
+'0016700006IPB9KAAX',
+'00167000068sPXaAAM',
+'001J5000006bxSDIAY',
+'0016700006FAIm5AAH',
+'0016700006HDFhLAAX',
+'0016700006F7GQeAAN',
+'0016700006HAfmQAAT',
+'0016700005xddBFAAY',
+'001J5000005WJRlIAO',
+'0016700006IODS4AAP',
+'0016700006QAfwfAAD',
+'0016700006HAJsnAAH',
+'0016700006HC382AAD',
+'001J50000088kYEIAY',
+'001670000690l9iAAA',
+'0016700006KT84VAAT',
+'00167000068rGhtAAE',
+'0016700006Ct7MJAAZ',
+'0016700006QAfwkAAD',
+'001J5000006ar1lIAA',
+'00167000061gZgTAAU',
+'0016700006FAIkTAAX',
+'0016700006KSveRAAT',
+'001670000612zvvAAA',
+'00167000066B9w6AAC',
+'0016700006FBAXZAA5',
+'0016700006FASraAAH',
+'00167000061hmzGAAQ',
+'0016700005xdyUbAAI',
+'001670000691YePAAU',
+'0016700006Cujl9AAB',
+'00167000065zK3WAAU',
+'0016700006FAeE4AAL',
+'0016700005Lnf1TAAR',
+'00167000061i52IAAQ',
+'0016700006IQ9Q3AAL',
+'001J5000006cUq2IAE',
+'001J50000088yXyIAI',
+'00167000068sn37AAA',
+'00167000068srVYAAY',
+'001J5000006cMXHIA2',
+'001J5000006ddSfIAI',
+'00167000068sEz5AAE',
+'0016700006NeXUtAAN',
+'0016700006KTOjGAAX',
+'0016700006HBNJzAAP',
+'001670000612UrhAAE',
+'0016700006IPj8eAAD',
+'0016700006NhaxuAAB',
+'0010X00004KA7nPQAT',
+'00167000066BCDUAA4',
+'0010X00004uFLjZQAW',
+'00167000068solJAAQ',
+'0016700005xdUPzAAM',
+'00167000061gt6zAAA',
+'0016700005xcaTuAAI',
+'00167000061huNAAAY',
+'0016700006HBz18AAD',
+'001J5000007UA2hIAG',
+'0016700006FA8WxAAL',
+'00167000061hKzPAAU',
+'0016700006HD0ztAAD',
+'0016700006HCIa3AAH',
+'00167000061iA6WAAU',
+'0016700006Cuw5FAAR',
+'0016700005xeAchAAE',
+'0016700006F7GPgAAN',
+'00167000061h1H8AAI',
+'0016700006F8EMIAA3',
+'00167000061gIfsAAE',
+'0016700005jZoCrAAK',
+'0016700006HBIgwAAH',
+'0016700006KUQtpAAH',
+'0016700006IP586AAD',
+'001J5000007SuZaIAK',
+'0016700006KSk2pAAD',
+'0016700006H9J5BAAV',
+'001J5000007SDurIAG',
+'0016700006Ngmi2AAB',
+'001J50000088dVrIAI',
+'0016700005xcXIqAAM',
+'0016700006HBz1NAAT',
+'001J5000007UfB9IAK',
+'0016700006IQjzQAAT',
+'0016700006HBecGAAT',
+'001670000690KuQAAU',
+'001J5000006d4bwIAA',
+'00167000061eSZTAA2',
+'00167000061hCRRAA2',
+'0016700006HBDPSAA5',
+'001J5000007SLSxIAO',
+'00167000068rGiDAAU',
+'0016700006Q9qYPAAZ',
+'001J50000088PN2IAM',
+'00167000068pFHHAA2',
+'0016700005wVteSAAS',
+'0016700006F8k5LAAR',
+'00167000068rS5iAAE',
+'0016700006KUV2wAAH',
+'001670000691G2PAAU',
+'0016700005Mv7ArAAJ',
+'0016700005XKFHBAA5',
+'0016700005xdNIPAA2',
+'0016700006IOt45AAD',
+'0016700006IObVTAA1',
+'0016700006IQhtaAAD',
+'0016700006IPYL2AAP',
+'0016700006Q9jAqAAJ',
+'00167000068sAdEAAU',
+'00167000065zeMLAAY',
+'0016700006H9J5aAAF',
+'0016700005xbLiKAAU',
+'0016700006HAJWyAAP',
+'001J5000006bAFhIAM',
+'001670000612wWSAAY',
+'00167000068ssz7AAA',
+'00167000061eeHZAAY',
+'00167000065zbmQAAQ',
+'00167000061hCqFAAU',
+'0010X00004iZYmCQAW',
+'0016700006Q9nKUAAZ',
+'00167000068sELyAAM',
+'0016700005jVzxtAAC',
+'0010X00004KA7hVQAT',
+'0016700005wW8lgAAC',
+'00167000068t4YqAAI',
+'0016700005Eabm6AAB',
+'0016700005wVzUiAAK',
+'0016700005r8VEpAAM',
+'001J5000007SJodIAG',
+'0016700006KT8C5AAL',
+'00167000068sOnSAAU',
+'00167000061grXkAAI',
+'00167000061gozhAAA',
+'00167000061gkgTAAQ',
+'00167000061gp9SAAQ',
+'00167000061gp9wAAA',
+'00167000061goKqAAI',
+'00167000061gorYAAQ',
+'00167000061go68AAA',
+'00167000061gklxAAA',
+'00167000061grWiAAI',
+'0010X00004Ue8wjQAB',
+'00167000061go75AAA',
+'00167000061go9LAAQ',
+'00167000061gkXOAAY',
+'00167000061grZqAAI',
+'00167000061goqtAAA',
+'0016700006Ngmf3AAB',
+'0016700005jZGfWAAW',
+'0016700006NeDIAAA3',
+'001J5000006bXfRIAU',
+'001J5000007WH44IAG',
+'001J5000006boc2IAA',
+'0016700006IOVZUAA5',
+'0016700006NeuBGAAZ',
+'001J50000088aDhIAI',
+'0016700006IQf1MAAT',
+'0016700006IPvczAAD',
+'0016700006HBwcOAAT',
+'0016700006NfhaDAAR',
+'0016700006HBMufAAH',
+'00167000061i3vlAAA',
+'00167000061gV3OAAU',
+'0016700006NgREhAAN',
+'0016700006NeLgyAAF',
+'00167000066BC5KAAW',
+'00167000068sFxWAAU',
+'001J5000007VcRDIA0',
+'0016700006FAUi2AAH',
+'00167000061iDlGAAU',
+'0016700006NhlW1AAJ',
+'00167000061hcKKAAY',
+'001J5000007UvUoIAK',
+'001670000612aE6AAI',
+'0016700006QAGuIAAX',
+'00167000061i9bdAAA',
+'0016700006IPZd7AAH',
+'0016700006Q9o3KAAR',
+'0016700006HAynGAAT',
+'0016700006HCrNQAA1',
+'0016700006NgPeYAAV',
+'00167000065zWW1AAM',
+'00167000068sXQsAAM',
+'00167000061f9mOAAQ',
+'0016700006KUr8HAAT',
+'0016700006HBPK4AAP',
+'00167000068sjWfAAI',
+'0016700006132ejAAA',
+'0016700006QAH2dAAH',
+'0016700006NeW5AAAV',
+'0016700006NfXrJAAV',
+'0016700005xd3SZAAY',
+'00167000061eiSUAAY',
+'00167000065zAqdAAE',
+'00167000061iDIiAAM',
+'001670000690c1jAAA',
+'00167000061iAlOAAU',
+'0016700006IPtlQAAT',
+'0016700005r7u1jAAA',
+'00167000065ypTuAAI',
+'001J5000007TIWZIA4',
+'0016700006H97alAAB',
+'001J5000006cRYnIAM',
+'0016700006QA9NkAAL',
+'001J5000005YXn2IAG',
+'001J5000006cSbzIAE'
+  ]) AS account_id
+),
+
+
+/* ---- SALES ATTRIBUTED ---- */
+sales_attributed AS (
+  SELECT
+    ci.account_id,
+    DATE(COALESCE(b.warranty_activation_date_c, b.purchase_date_c)) AS purchase_date,
+    b.id AS sale_id,
+    b.retail_price_chf_c,
+    b.product_reference_c,
+    b.product_code_c,
+    prd.collection_c
+  FROM control_input ci
+  JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_belonging_c_filtered` b
+    ON ci.account_id = b.account_c
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_product_2_filtered` prd
+    ON b.product_code_c = prd.id
+  WHERE b.is_watch_c = TRUE
+    AND DATE(COALESCE(b.warranty_activation_date_c, b.purchase_date_c))
+      BETWEEN DATE('2025-06-06') AND DATE_ADD(DATE('2025-06-06'), INTERVAL 90 DAY)
+),
+
+
+/* ---- OUTREACHES ---- */
+outreaches_attributed AS (
+  SELECT
+    ci.account_id,
+    tsks.channel_c,
+    DATE(tsks.created_date) AS created_date
+  FROM control_input ci
+  JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_task_filtered` tsks
+    ON ci.account_id = tsks.account_id
+  WHERE DATE(tsks.created_date)
+    BETWEEN DATE('2025-06-06') AND DATE_ADD(DATE('2025-06-06'), INTERVAL 90 DAY)
+    AND tsks.channel_c IN ('Call','Email','Kakao','Line','SMS','WeChat','WhatsApp')
+),
+
+
+/* ---- OFFLINE ACTIONS ---- */
+offline_actions_attributed AS (
+  SELECT
+    ci.account_id,
+    DATE(tsks.activity_date) AS activity_date,
+    tsks.type
+  FROM control_input ci
+  JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_task_filtered` tsks
+    ON ci.account_id = tsks.account_id
+  WHERE tsks.type IS NOT NULL
+    AND tsks.record_type_id = "01267000000V6gLAAS"
+    AND DATE(tsks.activity_date)
+      BETWEEN DATE('2025-06-06') AND DATE_ADD(DATE('2025-06-06'), INTERVAL 90 DAY)
+),
+
+
+/* ---- FIRST TOUCH ---- */
+touch_events AS (
+  SELECT account_id, created_date AS event_date
+  FROM outreaches_attributed
+  UNION ALL
+  SELECT account_id, activity_date AS event_date
+  FROM offline_actions_attributed
+),
+first_touch AS (
+  SELECT account_id, MIN(event_date) AS first_touch_3m
+  FROM touch_events
+  GROUP BY account_id
+),
+
+
+/* ---- SALES AGG ---- */
+sales_aggregated AS (
+  SELECT
+    sa.account_id,
+    COUNT(DISTINCT CASE
+      WHEN sa.purchase_date BETWEEN DATE('2025-06-06') AND DATE_ADD(DATE('2025-06-06'), INTERVAL 90 DAY)
+           AND ft.first_touch_3m IS NOT NULL
+           AND sa.purchase_date >= ft.first_touch_3m
+      THEN sa.sale_id END) AS converted_3m,
+    SUM(CASE
+      WHEN sa.purchase_date BETWEEN DATE('2025-06-06') AND DATE_ADD(DATE('2025-06-06'), INTERVAL 90 DAY)
+           AND ft.first_touch_3m IS NOT NULL
+           AND sa.purchase_date >= ft.first_touch_3m
+      THEN sa.retail_price_chf_c ELSE 0 END) AS revenue_3m
+  FROM sales_attributed sa
+  LEFT JOIN first_touch ft ON sa.account_id = ft.account_id
+  GROUP BY sa.account_id
+),
+
+
+/* ---- DETAILS ---- */
+sales_details_3m AS (
+  SELECT
+    account_id,
+    STRING_AGG(
+      FORMAT('%s: CHF%.0f (%s, %s)',
+        FORMAT_DATE('%Y-%m-%d', purchase_date),
+        retail_price_chf_c,
+        INITCAP(collection_c),
+        INITCAP(product_reference_c)
+      ),
+      '\n' ORDER BY purchase_date ASC
+    ) AS sales_details_3m
+  FROM sales_attributed
+  GROUP BY account_id
+),
+
+
+wishlist_details_3m AS (
+  SELECT
+    ci.account_id,
+    STRING_AGG(
+      FORMAT('%s: %s, %s',
+        FORMAT_DATE('%Y-%m-%d', DATE(wish.created_date)),
+        INITCAP(prd.collection_c),
+        INITCAP(prd.product_code)
+      ),
+      '\n' ORDER BY DATE(wish.created_date) ASC
+    ) AS wishlist_details_3m
+  FROM control_input ci
+  JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    ON ci.account_id = wish.account_c
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_product_2_filtered` prd
+    ON wish.product_c = prd.id
+  WHERE DATE(wish.created_date) BETWEEN DATE('2025-06-06') AND DATE_ADD(DATE('2025-06-06'), INTERVAL 3 MONTH)
+  GROUP BY ci.account_id
+),
+
+
+outreaches_details_3m AS (
+  SELECT
+    account_id,
+    STRING_AGG(
+      FORMAT('%s (%s)',
+        FORMAT_DATE('%Y-%m-%d', created_date),
+        channel_c
+      ),
+      '\n' ORDER BY created_date ASC
+    ) AS outreaches_details_3m
+  FROM outreaches_attributed
+  GROUP BY account_id
+),
+
+
+offline_actions_details_3m AS (
+  SELECT
+    account_id,
+    STRING_AGG(
+      FORMAT('%s (%s)',
+        FORMAT_DATE('%Y-%m-%d', activity_date),
+        LOWER(type)
+      ),
+      '\n' ORDER BY activity_date ASC
+    ) AS offline_actions_details_3m
+  FROM offline_actions_attributed
+  GROUP BY account_id
+),
+
+
+/* ---- UPGRADES ---- */
+upgrades_detailed AS (
+  SELECT
+    ci.account_id,
+    ah_start.life_time_segment AS segment_start,
+    ah_3m.life_time_segment AS segment_3m
+  FROM control_input ci
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_account_history_dataset` ah_start
+    ON ci.account_id = ah_start.account_id
+    AND DATE(ah_start.photo_date) = DATE_TRUNC(DATE('2025-06-06'), MONTH)
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_account_history_dataset` ah_3m
+    ON ci.account_id = ah_3m.account_id
+    AND DATE(ah_3m.photo_date) = DATE_TRUNC(DATE_ADD(DATE('2025-06-06'), INTERVAL 3 MONTH), MONTH)
+)
+
+
+/* ---- FINAL SELECT ---- */
+SELECT
+  ci.account_id,
+  IFNULL(sa.converted_3m,0) AS converted_3m,
+  IFNULL(sa.revenue_3m,0) AS revenue_3m,
+  sd.sales_details_3m,
+  wd.wishlist_details_3m,
+  od.outreaches_details_3m,
+  ofd.offline_actions_details_3m,
+  CASE
+    WHEN ud.segment_3m IS NULL THEN 0
+    WHEN ud.segment_start = 'One Timer' AND ud.segment_3m != 'One Timer'
+      THEN 1
+    WHEN ud.segment_start = 'Loyal' AND ud.segment_3m IN ('VIC','VVIC')
+      THEN 1
+    WHEN ud.segment_start = 'VIC' AND ud.segment_3m = 'VVIC'
+      THEN 1
+    ELSE 0
+  END AS upgraded_3m,
+  CASE
+    WHEN ud.segment_3m IS NULL THEN NULL
+    WHEN ud.segment_start = 'One Timer' AND ud.segment_3m != 'One Timer'
+      THEN FORMAT('one_timer_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
+    WHEN ud.segment_start = 'Loyal' AND ud.segment_3m IN ('VIC','VVIC')
+      THEN FORMAT('loyal_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
+    WHEN ud.segment_start = 'VIC' AND ud.segment_3m = 'VVIC'
+      THEN 'vic_to_vvic'
+    ELSE NULL
+  END AS upgraded_3m_details
+FROM control_input ci
+LEFT JOIN sales_aggregated sa ON sa.account_id = ci.account_id
+LEFT JOIN sales_details_3m sd ON sd.account_id = ci.account_id
+LEFT JOIN wishlist_details_3m wd ON wd.account_id = ci.account_id
+LEFT JOIN outreaches_details_3m od ON od.account_id = ci.account_id
+LEFT JOIN offline_actions_details_3m ofd ON ofd.account_id = ci.account_id
+LEFT JOIN upgrades_detailed ud ON ud.account_id = ci.account_id;

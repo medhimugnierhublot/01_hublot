@@ -1,0 +1,245 @@
+WITH campaign_base AS (
+  SELECT
+    c.id AS campaign_or_subcampaign_id,
+    c.name AS campaign_or_subcampaign_name,
+    c.parent_id,
+    CASE WHEN c.parent_id IS NULL THEN c.id ELSE c.parent_id END AS campaign_id,
+    CASE WHEN c.parent_id IS NULL THEN c.name ELSE cp.name END AS campaign_name,
+    CASE WHEN c.parent_id IS NULL THEN NULL ELSE c.id END AS subcampaign_id,
+    CASE WHEN c.parent_id IS NULL THEN NULL ELSE c.name END AS subcampaign_name,
+    c.end_date AS subcampaign_end_date,
+    a.name AS boutique,
+    c.territory_c AS territory,
+    ab.territory_c AS fallback_territory
+  FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_salesforce.campaign` c
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_salesforce.campaign` cp ON c.parent_id = cp.id
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_salesforce.account` a ON a.id = c.boutique_c
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_account_boutiques` ab ON ab.id = c.boutique_c
+  WHERE c.end_date >= '2021-01-01' AND c.id IS NOT NULL
+),
+
+
+campaign_members AS (
+  SELECT
+    cm.id AS member_id,
+    cm.campaign_id,
+    cm.contact_id,
+    cm.status AS member_status,
+    cm.has_responded,
+    cm.participated_c,
+    ap.id AS account_id,
+    ap.macro_segment,
+    ap.type AS client_type
+  FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_salesforce.campaign_member` cm
+  LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_account_people` ap
+    ON cm.contact_id = ap.person_contact_id
+  WHERE NOT cm.is_deleted
+),
+
+
+sales_attributed AS (
+  SELECT
+    cm.member_id,
+    cb.subcampaign_id,
+    cb.subcampaign_end_date,
+    COALESCE(b.warranty_activation_date_c, b.purchase_date_c) AS purchase_date,
+    b.id AS sale_id,
+    b.retail_price_chf_c,
+    b.product_reference_c,
+    cm.participated_c
+  FROM campaign_members cm
+  JOIN campaign_base cb ON cb.subcampaign_id = cm.campaign_id
+  JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_belonging_c_filtered` b
+    ON cm.account_id = b.account_c
+  WHERE b.is_watch_c = TRUE
+    AND DATE(COALESCE(b.warranty_activation_date_c, b.purchase_date_c))
+        BETWEEN DATE(cb.subcampaign_end_date) AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 90 DAY)
+),
+
+
+sales_aggregated AS (
+  SELECT
+    member_id,
+    subcampaign_id,
+    COUNT(DISTINCT CASE WHEN DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 30 THEN sale_id END) AS converted_1m,
+    COUNT(DISTINCT CASE WHEN DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 90 THEN sale_id END) AS converted_3m,
+    SUM(CASE WHEN DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 30 THEN retail_price_chf_c ELSE 0 END) AS revenue_1m,
+    SUM(CASE WHEN DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 90 THEN retail_price_chf_c ELSE 0 END) AS revenue_3m,
+    COUNT(DISTINCT CASE WHEN DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 30 THEN sale_id END) > 0 AS customers_1m,
+    COUNT(DISTINCT CASE WHEN DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 90 THEN sale_id END) > 0 AS customers_3m,
+    SUM(CASE WHEN participated_c AND DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 30 THEN retail_price_chf_c ELSE 0 END) AS revenue_1m_has_participated,
+    SUM(CASE WHEN participated_c AND DATE_DIFF(DATE(purchase_date), DATE(subcampaign_end_date), DAY) BETWEEN 0 AND 90 THEN retail_price_chf_c ELSE 0 END) AS revenue_3m_has_participated
+  FROM sales_attributed
+  GROUP BY member_id, subcampaign_id
+)
+
+
+SELECT
+  cb.campaign_id,
+  cb.campaign_name,
+  cb.subcampaign_id,
+  cb.subcampaign_name,
+  cb.boutique,
+  COALESCE(cb.territory, cb.fallback_territory) AS territory,
+  DATE(cb.subcampaign_end_date) AS campaign_end_date,
+  cm.member_id,
+  cm.account_id,
+  cm.contact_id,
+  cm.client_type,
+  cm.macro_segment,
+  cm.member_status,
+  cm.has_responded,
+  cm.participated_c,
+
+
+  -- Flags
+  IF(cm.client_type = 'Hublot Client', 1, 0) AS is_client,
+  IF(cm.client_type = 'Prospect', 1, 0) AS is_prospect,
+  IF(cm.macro_segment IS NOT NULL, 1, 0) AS has_macro_segment,
+  IF(cm.member_status = 'Clicked', 1, 0) AS is_clicked,
+  IF(cm.member_status = 'Hard Bounce', 1, 0) AS is_hard_bounce,
+  IF(cm.member_status = 'Invited', 1, 0) AS is_invited,
+  IF(cm.member_status = 'Opened', 1, 0) AS is_opened,
+  IF(cm.member_status = 'Refused', 1, 0) AS is_refused,
+  IF(cm.member_status = 'Responded', 1, 0) AS is_responded_status,
+  IF(cm.member_status = 'Sent', 1, 0) AS is_sent,
+  IF(cm.member_status = 'Soft Bounce', 1, 0) AS is_soft_bounce,
+  IF(cm.has_responded, 1, 0) AS responded,
+  IF(cm.participated_c = TRUE, 1, 0) AS has_participated,
+
+
+  -- KPIs
+  IFNULL(s.converted_1m, 0) AS converted_1m,
+  IFNULL(s.converted_3m, 0) AS converted_3m,
+  IFNULL(s.revenue_1m, 0) AS revenue_1m,
+  IFNULL(s.revenue_3m, 0) AS revenue_3m,
+  IF(s.customers_1m, 1, 0) AS customers_1m,
+  IF(s.customers_3m, 1, 0) AS customers_3m,
+  IFNULL(s.revenue_1m_has_participated, 0) AS revenue_1m_has_participated,
+  IFNULL(s.revenue_3m_has_participated, 0) AS revenue_3m_has_participated,
+
+
+  -- Wishlist metrics
+  (
+    SELECT COUNT(*)
+    FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    WHERE wish.account_c = cm.account_id
+      AND DATE(wish.created_date) BETWEEN DATE(cb.subcampaign_end_date)
+      AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 1 MONTH)
+  ) AS wishes_1m,
+
+
+  (
+    SELECT COUNT(*)
+    FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    WHERE wish.account_c = cm.account_id
+      AND DATE(wish.created_date) BETWEEN DATE(cb.subcampaign_end_date)
+      AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 3 MONTH)
+  ) AS wishes_3m,
+
+
+  (
+    SELECT COUNT(*)
+    FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    WHERE wish.account_c = cm.account_id
+      AND cm.participated_c = TRUE
+      AND DATE(wish.created_date) BETWEEN DATE(cb.subcampaign_end_date)
+      AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 1 MONTH)
+  ) AS wishes_1m_has_participated,
+
+
+  (
+    SELECT COUNT(*)
+    FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    WHERE wish.account_c = cm.account_id
+      AND cm.participated_c = TRUE
+      AND DATE(wish.created_date) BETWEEN DATE(cb.subcampaign_end_date)
+      AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 3 MONTH)
+  ) AS wishes_3m_has_participated, 
+
+  -- Sales details 1m
+  (
+    SELECT STRING_AGG(
+      FORMAT('%s: CHF%.0f (%s, %s) ', FORMAT_DATE('%Y-%m-%d', purchase_date),retail_price_chf_c, INITCAP(collection_c), INITCAP(product_reference_c)),
+      '\n'
+    )
+    FROM (
+      SELECT
+        COALESCE(bel.warranty_activation_date_c, bel.purchase_date_c) AS purchase_date,
+        bel.retail_price_chf_c,
+        bel.product_reference_c,
+        prd.collection_c
+      FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_belonging_c_filtered` bel
+      LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_product_2_filtered` prd
+        ON bel.product_code_c = prd.id
+      WHERE account_c = cm.account_id
+        AND is_watch_c = TRUE
+        AND DATE(COALESCE(warranty_activation_date_c, purchase_date_c))
+          BETWEEN DATE(cb.subcampaign_end_date)
+          AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 1 MONTH)
+    )
+  ) AS sales_details_1m,
+
+
+  -- Sales details 3m
+  (
+    SELECT STRING_AGG(
+      FORMAT('%s: CHF%.0f (%s, %s) ', FORMAT_DATE('%Y-%m-%d', purchase_date),retail_price_chf_c, INITCAP(collection_c), INITCAP(product_reference_c)),
+      '\n'
+    )
+    FROM (
+      SELECT
+        COALESCE(bel.warranty_activation_date_c, bel.purchase_date_c) AS purchase_date,
+        bel.retail_price_chf_c,
+        bel.product_reference_c,
+        prd.collection_c
+      FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_belonging_c_filtered` bel
+      LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_product_2_filtered` prd
+        ON bel.product_code_c = prd.id
+      WHERE account_c = cm.account_id
+        AND is_watch_c = TRUE
+        AND DATE(COALESCE(warranty_activation_date_c, purchase_date_c))
+          BETWEEN DATE(cb.subcampaign_end_date)
+          AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 3 MONTH)
+    )
+  ) AS sales_details_3m,
+
+
+  -- Wishlist 1m
+  (
+    SELECT STRING_AGG(
+      FORMAT('%s: %s, %s', FORMAT_DATE('%Y-%m-%d', wish.created_date), INITCAP(prd.collection_c), INITCAP(prd.product_code)),
+      '\n'
+    )
+    FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_product_2_filtered` prd
+      ON wish.product_c = prd.id
+    WHERE wish.account_c = cm.account_id
+      AND DATE(wish.created_date) BETWEEN DATE(cb.subcampaign_end_date)
+      AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 1 MONTH)
+  ) AS wishlist_details_1m,
+
+
+  -- Wishlist 3m
+  (
+    SELECT STRING_AGG(
+      FORMAT('%s: %s, %s', FORMAT_DATE('%Y-%m-%d', wish.created_date), INITCAP(prd.collection_c), INITCAP(prd.product_code)),
+      '\n'
+    )
+    FROM `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_wishlist_c_filtered` wish
+    LEFT JOIN `hub-prd-atomdt-prj-pltfrm-12b.hub_prd_atomdtp_bqd_crm_client_analysis.CLIENTS_REPORTING_product_2_filtered` prd
+      ON wish.product_c = prd.id
+    WHERE wish.account_c = cm.account_id
+      AND DATE(wish.created_date) BETWEEN DATE(cb.subcampaign_end_date)
+      AND DATE_ADD(DATE(cb.subcampaign_end_date), INTERVAL 3 MONTH)
+  ) AS wishlist_details_3m,
+
+
+FROM campaign_members cm
+JOIN campaign_base cb ON cb.subcampaign_id = cm.campaign_id
+LEFT JOIN sales_aggregated s
+  ON cm.member_id = s.member_id AND cb.subcampaign_id = s.subcampaign_id
+
+
+
+
