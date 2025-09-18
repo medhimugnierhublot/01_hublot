@@ -264,16 +264,18 @@ CASE
     ELSE 0
 END AS upgraded_3m,
 
-  CASE
-    WHEN ud.segment_3m IS NULL THEN NULL
-    WHEN ud.segment_start = 'One Timer' AND ud.segment_3m != 'One Timer'
-      THEN FORMAT('one_timer_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
-    WHEN ud.segment_start = 'Loyal' AND ud.segment_3m IN ('VIC','VVIC')
-      THEN FORMAT('loyal_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
-    WHEN ud.segment_start = 'VIC' AND ud.segment_3m = 'VVIC'
-      THEN 'vic_to_vvic'
-    ELSE NULL
-  END AS upgraded_3m_details
+CASE
+  WHEN ud.segment_3m IS NULL THEN NULL
+  WHEN ud.segment_start = 'Prospect' AND ud.segment_3m != 'Prospect'
+    THEN FORMAT('prospect_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
+  WHEN ud.segment_start = 'One Timer' AND ud.segment_3m != 'One Timer'
+    THEN FORMAT('one_timer_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
+  WHEN ud.segment_start = 'Loyal' AND ud.segment_3m IN ('VIC','VVIC')
+    THEN FORMAT('loyal_to_%s', LOWER(REPLACE(ud.segment_3m, ' ', '_')))
+  WHEN ud.segment_start = 'VIC' AND ud.segment_3m = 'VVIC'
+    THEN 'vic_to_vvic'
+  ELSE NULL
+END AS upgraded_3m_details
 
 
 FROM client_list_members clm
